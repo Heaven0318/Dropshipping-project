@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manifest — Shopee Dropship Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: 40 20% 97%;
+    --surface: 0 0% 100%;
+    --surface-2: 40 15% 94%;
+    --ink: 220 20% 12%;
+    --ink-muted: 220 10% 42%;
+    --border: 40 12% 87%;
+    --accent: 168 65% 26%;
+    --accent-fg: 0 0% 100%;
+    --warn: 38 85% 42%;
+    --danger: 6 70% 46%;
+  }
+  html.dark {
+    --bg: 222 32% 7%;
+    --surface: 220 26% 10%;
+    --surface-2: 220 22% 13%;
+    --ink: 210 25% 93%;
+    --ink-muted: 215 12% 63%;
+    --border: 220 18% 19%;
+    --accent: 168 55% 48%;
+    --accent-fg: 222 32% 7%;
+    --warn: 38 80% 58%;
+    --danger: 6 75% 62%;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: hsl(var(--bg));
+    color: hsl(var(--ink));
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .display { font-family: 'Space Grotesk', sans-serif; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 224px; flex-shrink: 0; border-right: 1px solid hsl(var(--border));
+    background: hsl(var(--surface)); display: flex; flex-direction: column;
+  }
+  .sidebar-header {
+    height: 56px; display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; border-bottom: 1px solid hsl(var(--border));
+  }
+  .logo-mark {
+    width: 24px; height: 24px; border-radius: 4px; background: hsl(var(--accent));
+    color: hsl(var(--accent-fg)); display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+  }
+  .logo-text { font-size: 15px; font-weight: 500; }
+  nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+  nav button.nav-link {
+    display: block; width: 100%; text-align: left; padding: 6px 12px; border-radius: 4px; font-size: 13px;
+    color: hsl(var(--ink-muted)); text-decoration: none; background: transparent; border: none;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  nav button.nav-link:hover { background: hsl(var(--surface-2)); color: hsl(var(--ink)); }
+  nav button.nav-link.active { background: hsl(var(--surface-2)); color: hsl(var(--ink)); font-weight: 500; }
+  .env-box {
+    margin: 12px; padding: 8px 12px; border: 1px solid hsl(var(--border));
+    border-radius: 6px; background: hsl(var(--surface-2));
+  }
+  .env-box p:first-child {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: hsl(var(--ink-muted)); margin: 0;
+  }
+  .env-box p:last-child { margin: 2px 0 0; font-size: 13px; font-weight: 500; color: hsl(var(--warn)); }
+
+  /* Main */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  header.topbar {
+    height: 56px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid hsl(var(--border)); background: hsl(var(--surface)); padding: 0 24px;
+  }
+  header.topbar h1 { font-size: 15px; font-weight: 500; margin: 0; }
+  header.topbar p { font-size: 12px; color: hsl(var(--ink-muted)); margin: 2px 0 0; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .sync-btn {
+    border: 1px solid hsl(var(--border)); background: hsl(var(--surface));
+    color: hsl(var(--ink-muted)); font-size: 13px; font-weight: 500;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .sync-btn:hover { color: hsl(var(--ink)); }
+
+  /* Theme toggle */
+  .theme-toggle {
+    display: inline-flex; gap: 2px; padding: 2px; border-radius: 6px;
+    border: 1px solid hsl(var(--border)); background: hsl(var(--surface-2));
+  }
+  .theme-toggle button {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 4px; background: transparent; color: hsl(var(--ink-muted)); cursor: pointer;
+  }
+  .theme-toggle button.active { background: hsl(var(--surface)); color: hsl(var(--ink)); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .theme-toggle svg { width: 14px; height: 14px; }
+
+  main.content { flex: 1; padding: 24px; }
+  .view { display: none; flex-direction: column; gap: 24px; }
+  .view.active { display: flex; }
+
+  /* KPI cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card { border: 1px solid hsl(var(--border)); background: hsl(var(--surface)); border-radius: 10px; padding: 16px; }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: hsl(var(--ink-muted)); margin: 0; }
+  .tear-line {
+    height: 1px; margin: 8px 0;
+    background-image: repeating-linear-gradient(to right, hsl(var(--border)) 0, hsl(var(--border)) 4px, transparent 4px, transparent 9px);
+  }
+  .kpi-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .kpi-value { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .kpi-delta { font-size: 11px; }
+  .kpi-delta.up { color: hsl(var(--accent)); }
+  .kpi-delta.down { color: hsl(var(--danger)); }
+
+  /* Panels */
+  .panels { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; }
+  @media (max-width: 1000px) { .panels { grid-template-columns: 1fr; } }
+  .panel { border: 1px solid hsl(var(--border)); background: hsl(var(--surface)); border-radius: 10px; overflow: hidden; }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid hsl(var(--border));
+  }
+  .panel-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+  .panel-header a { font-size: 12px; font-weight: 500; color: hsl(var(--accent)); text-decoration: none; }
+  .panel-header .sub { font-size: 12px; color: hsl(var(--ink-muted)); margin: 2px 0 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { border-bottom: 1px solid hsl(var(--border)); }
+  th {
+    text-align: left; padding: 8px 16px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .03em; color: hsl(var(--ink-muted)); font-weight: 500; white-space: nowrap;
+  }
+  th.right, td.right { text-align: right; }
+  tbody tr { border-bottom: 1px solid hsl(var(--border)); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: hsl(var(--surface-2)); }
+  td { padding: 10px 16px; }
+  .muted { color: hsl(var(--ink-muted)); }
+  .accent-text { color: hsl(var(--accent)); }
+  .danger-text { color: hsl(var(--danger)); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; }
+
+  /* status track (signature element) */
+  .status-track { display: flex; align-items: center; gap: 8px; }
+  .ticks { display: flex; gap: 3px; }
+  .tick { width: 8px; height: 8px; border-radius: 1.5px; background: hsl(var(--border)); flex-shrink: 0; }
+  .tick.done { background: hsl(var(--accent)); }
+  .tick.current { background: hsl(var(--accent)); box-shadow: 0 0 0 3px hsl(var(--accent) / .25); }
+  .stage-label { font-size: 11px; color: hsl(var(--ink-muted)); white-space: nowrap; }
+
+  /* products panel list */
+  .product-list { list-style: none; margin: 0; padding: 0; }
+  .product-list li {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid hsl(var(--border));
+  }
+  .product-list li:last-child { border-bottom: none; }
+  .product-title { font-size: 13px; margin: 0; }
+  .product-meta { font-size: 11px; color: hsl(var(--ink-muted)); margin: 2px 0 0; }
+  .product-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-left: 12px; }
+  .stock-tag { font-size: 11px; }
+  .stock-tag.low { color: hsl(var(--danger)); }
+  .price-cell { width: 64px; text-align: right; font-size: 13px; }
+  .margin-cell { width: 48px; text-align: right; font-size: 12px; color: hsl(var(--accent)); }
+
+  /* generic filter bar */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid hsl(var(--border)); background: hsl(var(--surface));
+    color: hsl(var(--ink-muted)); font-size: 12px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  }
+  .chip.active { background: hsl(var(--accent)); color: hsl(var(--accent-fg)); border-color: hsl(var(--accent)); }
+
+  /* badge */
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid hsl(var(--border)); color: hsl(var(--ink-muted));
+  }
+  .badge.api { color: hsl(var(--accent)); border-color: hsl(var(--accent) / .4); }
+  .badge.manual { color: hsl(var(--warn)); border-color: hsl(var(--warn) / .4); }
+
+  /* cards grid (suppliers / fulfillment) */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .info-card { border: 1px solid hsl(var(--border)); background: hsl(var(--surface)); border-radius: 10px; padding: 16px; }
+  .info-card h3 { font-size: 14px; margin: 0 0 4px; font-weight: 500; }
+  .info-card p { font-size: 12px; color: hsl(var(--ink-muted)); margin: 0; }
+  .info-card .row { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; }
+
+  /* fulfillment pipeline */
+  .pipeline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+  .pipeline .step { border: 1px solid hsl(var(--border)); background: hsl(var(--surface-2)); border-radius: 6px; padding: 6px 10px; }
+  .pipeline .arrow { color: hsl(var(--ink-muted)); }
+
+  /* bar chart (pure CSS) */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 8px 4px 0; }
+  .bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-chart .bar { width: 100%; max-width: 28px; background: hsl(var(--accent)); border-radius: 3px 3px 0 0; }
+  .bar-chart .bar-label { font-size: 10px; color: hsl(var(--ink-muted)); }
+
+  /* AI assistant */
+  .chat-shell { display: flex; flex-direction: column; height: 480px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45; }
+  .msg.assistant { background: hsl(var(--surface-2)); align-self: flex-start; }
+  .msg.user { background: hsl(var(--accent)); color: hsl(var(--accent-fg)); align-self: flex-end; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid hsl(var(--border)); }
+  .chat-input-row input {
+    flex: 1; border: 1px solid hsl(var(--border)); background: hsl(var(--surface-2)); color: hsl(var(--ink));
+    border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: 'Inter', sans-serif;
+  }
+  .chat-input-row button {
+    border: none; background: hsl(var(--accent)); color: hsl(var(--accent-fg)); border-radius: 6px;
+    padding: 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .suggestion-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 16px 12px; }
+  .suggestion-row button {
+    border: 1px dashed hsl(var(--border)); background: transparent; color: hsl(var(--ink-muted));
+    font-size: 11px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  }
+
+  /* settings */
+  .settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .field label { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: hsl(var(--ink-muted)); }
+  .field input, .field select {
+    border: 1px solid hsl(var(--border)); background: hsl(var(--surface-2)); color: hsl(var(--ink));
+    border-radius: 6px; padding: 7px 10px; font-size: 13px; font-family: 'Inter', sans-serif;
+  }
+  .save-btn {
+    border: none; background: hsl(var(--accent)); color: hsl(var(--accent-fg)); border-radius: 6px;
+    padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; align-self: flex-start;
+  }
+
+  .note {
+    font-size: 12px; color: hsl(var(--ink-muted)); border: 1px dashed hsl(var(--border));
+    border-radius: 8px; padding: 10px 14px; background: hsl(var(--surface-2));
+  }
+
+  /* Passcode gate */
+  #lock-screen {
+    position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center;
+    background: hsl(var(--bg));
+  }
+  #lock-screen.hidden { display: none; }
+  .lock-card {
+    width: 280px; border: 1px solid hsl(var(--border)); background: hsl(var(--surface));
+    border-radius: 10px; padding: 24px; text-align: center;
+  }
+  .lock-card .logo-mark { margin: 0 auto 12px; }
+  .lock-card h2 { font-size: 15px; margin: 0 0 4px; }
+  .lock-card p { font-size: 12px; color: hsl(var(--ink-muted)); margin: 0 0 16px; }
+  .lock-card input {
+    width: 100%; border: 1px solid hsl(var(--border)); background: hsl(var(--surface-2)); color: hsl(var(--ink));
+    border-radius: 6px; padding: 9px 10px; font-size: 14px; text-align: center; letter-spacing: .1em;
+    font-family: 'IBM Plex Mono', monospace; box-sizing: border-box;
+  }
+  .lock-card button {
+    width: 100%; margin-top: 10px; border: none; background: hsl(var(--accent)); color: hsl(var(--accent-fg));
+    border-radius: 6px; padding: 9px; font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .lock-error { font-size: 12px; color: hsl(var(--danger)); margin-top: 8px; min-height: 14px; }
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <div class="lock-card">
+    <span class="logo-mark mono" style="display:inline-flex;">M</span>
+    <h2 class="display">Manifest</h2>
+    <p>Enter the owner passcode to continue.</p>
+    <input type="password" id="lock-input" placeholder="••••••" autocomplete="off" />
+    <button id="lock-submit">Unlock</button>
+    <p class="lock-error" id="lock-error"></p>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-mark mono">M</span>
+      <span class="logo-text display">Manifest</span>
+    </div>
+    <nav id="nav"></nav>
+    <div class="env-box">
+      <p class="mono">Environment</p>
+      <p>Test mode</p>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="display" id="page-title">Dashboard</h1>
+        <p id="page-sub">3 shops connected · last synced 4 min ago</p>
+      </div>
+      <div class="topbar-right">
+        <button class="sync-btn">Sync now</button>
+        <div class="theme-toggle" id="theme-toggle" role="radiogroup" aria-label="Theme"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view" data-view="dashboard">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="panels">
+          <div class="panel">
+            <div class="panel-header"><h2 class="display">Recent orders</h2><a href="#" data-goto="orders">View all</a></div>
+            <div class="table-wrap"><table>
+              <thead><tr><th class="mono">Order</th><th>Product</th><th class="mono">SKU</th><th class="right">Price</th><th class="right">Profit</th><th>Status</th></tr></thead>
+              <tbody id="dash-orders-body"></tbody>
+            </table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2 class="display">Product margins</h2></div>
+            <ul class="product-list" id="dash-product-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCT RESEARCH -->
+      <section class="view" data-view="research">
+        <div class="filter-bar">
+          <button class="chip active">All categories</button>
+          <button class="chip">Highest profit</button>
+          <button class="chip">Highest margin</button>
+          <button class="chip">Best ROI</button>
+          <button class="chip">Most inventory</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div><h2 class="display">Supplier product research</h2><p class="sub">Every imported candidate, with estimated Shopee economics before you list it.</p></div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>Product</th><th>Supplier</th><th class="right">Supplier cost</th><th class="right">Est. selling price</th>
+              <th class="right">Shopee fees</th><th class="right">Est. profit</th><th class="right">Margin</th><th class="right">ROI</th>
+            </tr></thead>
+            <tbody id="research-body"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+      <section class="view" data-view="products">
+        <div class="filter-bar">
+          <button class="chip active">All statuses</button>
+          <button class="chip">Active</button>
+          <button class="chip">Draft</button>
+          <button class="chip">Out of stock</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2 class="display">Products</h2><p class="sub">Listings currently mapped to a supplier product.</p></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Title</th><th class="mono">SKU</th><th>Supplier</th><th class="right">Price</th><th class="right">Stock</th><th class="right">Margin</th><th>Status</th></tr></thead>
+            <tbody id="products-body"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- SUPPLIERS -->
+      <section class="view" data-view="suppliers">
+        <div class="panel-header" style="padding:0;">
+          <div><h2 class="display" style="font-size:16px;">Suppliers</h2><p class="sub">Each card is one supplier adapter — API-connected or manual/CSV.</p></div>
+        </div>
+        <div class="card-grid" id="suppliers-grid"></div>
+      </section>
+
+      <!-- ORDERS -->
+      <section class="view" data-view="orders">
+        <div class="filter-bar" id="order-status-filter"></div>
+        <div class="panel">
+          <div class="panel-header"><h2 class="display">Orders</h2><p class="sub">All Shopee orders across connected shops.</p></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th class="mono">Order</th><th>Product</th><th class="mono">SKU</th><th class="right">Price</th><th class="right">Profit</th><th>Status</th><th>Created</th></tr></thead>
+            <tbody id="orders-full-body"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- FULFILLMENT -->
+      <section class="view" data-view="fulfillment">
+        <div class="panel-header" style="padding:0;">
+          <div><h2 class="display" style="font-size:16px;">Fulfillment</h2><p class="sub">What each new order needs sent to its supplier.</p></div>
+        </div>
+        <div class="card-grid" id="fulfillment-grid"></div>
+      </section>
+
+      <!-- TRACKING -->
+      <section class="view" data-view="tracking">
+        <div class="panel">
+          <div class="panel-header"><h2 class="display">Tracking</h2><p class="sub">Supplier shipments and whether they've been pushed to Shopee.</p></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th class="mono">Order</th><th class="mono">Tracking no.</th><th>Carrier</th><th>Shipped</th><th>Pushed to Shopee</th></tr></thead>
+            <tbody id="tracking-body"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- PROFIT -->
+      <section class="view" data-view="profit">
+        <div class="kpi-grid" id="profit-kpi-grid"></div>
+        <div class="panel">
+          <div class="panel-header"><h2 class="display">Profit — last 7 days</h2></div>
+          <div class="bar-chart" id="profit-chart"></div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="view" data-view="analytics">
+        <div class="kpi-grid" id="analytics-kpi-grid"></div>
+        <div class="panels">
+          <div class="panel">
+            <div class="panel-header"><h2 class="display">Best sellers</h2></div>
+            <ul class="product-list" id="best-sellers-list"></ul>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2 class="display">Worst performers</h2></div>
+            <ul class="product-list" id="worst-performers-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI ASSISTANT -->
+      <section class="view" data-view="ai">
+        <div class="panel">
+          <div class="panel-header"><h2 class="display">AI Business Assistant</h2><p class="sub">Ask about your actual products, orders, and margins.</p></div>
+          <div class="chat-shell">
+            <div class="chat-messages" id="chat-messages">
+              <div class="msg assistant">Hi — ask me things like "which products are making the most profit" or "find products with more than 30% margin." This preview has no backend wired up yet, so I'll just echo back.</div>
+            </div>
+            <div class="suggestion-row">
+              <button data-q="Which products are making the most profit?">Top profit products</button>
+              <button data-q="Which products should I stop selling?">Underperformers</button>
+              <button data-q="Why did my profit decrease this week?">Profit drop reason</button>
+            </div>
+            <div class="chat-input-row">
+              <input id="chat-input" type="text" placeholder="Ask about your products, orders, or margins…" />
+              <button id="chat-send">Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" data-view="settings">
+        <div class="settings-grid">
+          <div class="panel" style="padding:16px;">
+            <h2 class="display" style="font-size:14px; margin:0 0 12px;">Pricing defaults</h2>
+            <div class="field"><label>Default strategy</label>
+              <select><option>Fixed markup</option><option>Target profit</option><option>Target margin</option><option>Custom formula</option></select>
+            </div>
+            <div class="field"><label>Markup %</label><input type="text" value="50" /></div>
+            <div class="field"><label>Minimum margin alert (%)</label><input type="text" value="15" /></div>
+            <button class="save-btn">Save</button>
+          </div>
+          <div class="panel" style="padding:16px;">
+            <h2 class="display" style="font-size:14px; margin:0 0 12px;">Inventory</h2>
+            <div class="field"><label>Safety stock buffer</label><input type="text" value="2" /></div>
+            <div class="field"><label>Sync frequency</label>
+              <select><option>Every 15 minutes</option><option>Hourly</option><option>Manual only</option></select>
+            </div>
+            <button class="save-btn">Save</button>
+          </div>
+          <div class="panel" style="padding:16px;">
+            <h2 class="display" style="font-size:14px; margin:0 0 12px;">Notifications</h2>
+            <div class="field"><label>Alert email</label><input type="text" value="ops@example.com" /></div>
+            <div class="field"><label>Low stock threshold</label><input type="text" value="5 units" /></div>
+            <button class="save-btn">Save</button>
+          </div>
+        </div>
+        <p class="note">This preview is UI-only — fields don't persist. In the real app (the Node/Prisma version) these write to the PricingRule and Shop tables.</p>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  /* ---------- Passcode gate ----------
+     Client-side only: fine for keeping this page off casual visitors on a
+     shared link, but anyone who opens dev tools can read PASSCODE below or
+     just skip the check. Change PASSCODE to whatever you want. Asks again
+     every time the page loads (no "remember me"), per your request. */
+  const PASSCODE = "manifest2026";
+  const lockScreen = document.getElementById("lock-screen");
+  const lockInput = document.getElementById("lock-input");
+  const lockError = document.getElementById("lock-error");
+  function tryUnlock() {
+    if (lockInput.value === PASSCODE) {
+      lockScreen.classList.add("hidden");
+    } else {
+      lockError.textContent = "Incorrect passcode.";
+      lockInput.value = "";
+      lockInput.focus();
+    }
+  }
+  document.getElementById("lock-submit").addEventListener("click", tryUnlock);
+  lockInput.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+  lockInput.focus();
+
+  /* ---------- Theme ---------- */
+  const root = document.documentElement;
+  const THEME_KEY = "manifest-theme";
+  function systemPrefersDark() { return window.matchMedia("(prefers-color-scheme: dark)").matches; }
+  function applyTheme(theme) {
+    const effective = theme === "system" ? (systemPrefersDark() ? "dark" : "light") : theme;
+    root.classList.toggle("dark", effective === "dark");
+    localStorage.setItem(THEME_KEY, theme);
+    renderThemeToggle(theme);
+  }
+  function currentTheme() { return localStorage.getItem(THEME_KEY) || "system"; }
+  const ICONS = {
+    light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    dark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>',
+    system: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path stroke-linecap="round" d="M8 21h8M12 17v4"/></svg>'
+  };
+  function renderThemeToggle(active) {
+    const el = document.getElementById("theme-toggle");
+    el.innerHTML = ["light", "dark", "system"].map(t => `
+      <button type="button" role="radio" aria-checked="${t === active}" aria-label="${t}"
+        title="${t[0].toUpperCase() + t.slice(1)}" data-theme="${t}"
+        class="${t === active ? "active" : ""}">${ICONS[t]}</button>`).join("");
+    el.querySelectorAll("button").forEach(btn => btn.addEventListener("click", () => applyTheme(btn.dataset.theme)));
+  }
+  applyTheme(currentTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (currentTheme() === "system") applyTheme("system"); });
+
+  /* ---------- Formatting ---------- */
+  function money(minor) { return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 }).format(minor / 100); }
+  function pct(v) { return v.toFixed(1) + "%"; }
+
+  /* ---------- Data ---------- */
+  const NAV = [
+    { key: "dashboard", label: "Dashboard", sub: "3 shops connected · last synced 4 min ago" },
+    { key: "research", label: "Product Research", sub: "Evaluate supplier products before you list them" },
+    { key: "products", label: "Products", sub: "Everything currently listed or mapped" },
+    { key: "suppliers", label: "Suppliers", sub: "Connected supplier adapters" },
+    { key: "orders", label: "Orders", sub: "Every Shopee order across your shops" },
+    { key: "fulfillment", label: "Fulfillment", sub: "What each order needs sent to its supplier" },
+    { key: "tracking", label: "Tracking", sub: "Shipments and Shopee sync status" },
+    { key: "profit", label: "Profit", sub: "Revenue, costs, and net profit" },
+    { key: "analytics", label: "Analytics", sub: "Performance across products and suppliers" },
+    { key: "ai", label: "AI Assistant", sub: "Ask questions about your own data" },
+    { key: "settings", label: "Settings", sub: "Pricing, inventory, and notification defaults" },
+  ];
+  const STAGES = ["New","Paid","Awaiting","Supplier","Shipped","Delivered"];
+
+  const kpis = [
+    { label: "Today's profit", value: money(482400), delta: "+12.3%", trend: "up" },
+    { label: "Orders — 7 days", value: "214", delta: "+8", trend: "up" },
+    { label: "Avg. margin", value: pct(27.4), delta: "-1.1pt", trend: "down" },
+    { label: "Low-stock products", value: "6", delta: "+2", trend: "down" },
+  ];
+
+  const orders = [
+    { id: "SPX-88213", product: "Wireless Bluetooth Speaker", qty: 1, sku: "SPK-001", price: 89900, profit: 24100, stage: "Shipped", created: "Aug 3" },
+    { id: "SPX-88214", product: "Ceramic Pour-Over Dripper", qty: 2, sku: "CFE-014", price: 129800, profit: 38200, stage: "Supplier", created: "Aug 4" },
+    { id: "SPX-88217", product: "Foldable Laptop Stand", qty: 1, sku: "DSK-022", price: 54900, profit: 15600, stage: "Awaiting", created: "Aug 5" },
+    { id: "SPX-88220", product: "Wireless Bluetooth Speaker", qty: 1, sku: "SPK-001", price: 89900, profit: 24100, stage: "Delivered", created: "Aug 5" },
+    { id: "SPX-88221", product: "Magnetic Cable Organizer (3pk)", qty: 3, sku: "ACC-119", price: 32700, profit: 11400, stage: "Paid", created: "Aug 6" },
+    { id: "SPX-88225", product: "Ceramic Pour-Over Dripper", qty: 1, sku: "CFE-014", price: 64900, profit: 19100, stage: "New", created: "Aug 9" },
+  ];
+
+  const products = [
+    { title: "Wireless Bluetooth Speaker", sku: "SPK-001", supplier: "Canton Audio Co.", cost: 45000, price: 89900, margin: 33.2, stock: 18, status: "Active" },
+    { title: "Ceramic Pour-Over Dripper", sku: "CFE-014", supplier: "Jingde Home Goods", cost: 26800, price: 64900, margin: 41.3, stock: 4, status: "Active" },
+    { title: "Foldable Laptop Stand", sku: "DSK-022", supplier: "Alutek Supplies", cost: 21000, price: 54900, margin: 28.9, stock: 32, status: "Active" },
+    { title: "Magnetic Cable Organizer (3pk)", sku: "ACC-119", supplier: "Canton Audio Co.", cost: 8900, price: 32700, margin: 34.8, stock: 61, status: "Draft" },
+  ];
+
+  const suppliers = [
+    { name: "Canton Audio Co.", type: "api", products: 24, orders: 61 },
+    { name: "Jingde Home Goods", type: "csv", products: 12, orders: 19 },
+    { name: "Alutek Supplies", type: "manual", products: 8, orders: 7 },
+  ];
+
+  const shipments = [
+    { order: "SPX-88213", tracking: "JT2938471PH", carrier: "J&T Express", shipped: "Aug 6", pushed: true },
+    { order: "SPX-88220", tracking: "NJV0012239PH", carrier: "Ninja Van", shipped: "Aug 5", pushed: true },
+    { order: "SPX-88214", tracking: "—", carrier: "—", shipped: "Pending supplier", pushed: false },
+  ];
+
+  /* ---------- Nav render + routing ---------- */
+  const navEl = document.getElementById("nav");
+  navEl.innerHTML = NAV.map((n, i) => `<button class="nav-link${i === 0 ? " active" : ""}" data-view="${n.key}">${n.label}</button>`).join("");
+
+  function goto(view) {
+    document.querySelectorAll(".nav-link").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+    document.querySelectorAll(".view").forEach(s => s.classList.toggle("active", s.dataset.view === view));
+    const meta = NAV.find(n => n.key === view);
+    document.getElementById("page-title").textContent = meta.label;
+    document.getElementById("page-sub").textContent = meta.sub;
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  }
+  navEl.addEventListener("click", e => {
+    const btn = e.target.closest(".nav-link");
+    if (btn) goto(btn.dataset.view);
+  });
+  document.querySelectorAll("[data-goto]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); goto(a.dataset.goto); }));
+
+  /* ---------- Shared renderers ---------- */
+  function statusTrack(stage) {
+    const idx = STAGES.indexOf(stage);
+    const ticks = STAGES.map((s, i) => `<span class="tick ${i < idx ? "done" : i === idx ? "current" : ""}"></span>`).join("");
+    return `<div class="status-track"><div class="ticks">${ticks}</div><span class="stage-label mono">${stage}</span></div>`;
+  }
+  function orderRow(o, withDate) {
+    return `<tr>
+      <td class="mono muted">${o.id}</td>
+      <td>${o.product}${o.qty > 1 ? `<span class="muted"> ×${o.qty}</span>` : ""}</td>
+      <td class="mono muted">${o.sku}</td>
+      <td class="right tabular">${money(o.price)}</td>
+      <td class="right tabular accent-text">${money(o.profit)}</td>
+      <td>${statusTrack(o.stage)}</td>
+      ${withDate ? `<td class="muted">${o.created}</td>` : ""}
+    </tr>`;
+  }
+
+  /* Dashboard */
+  document.getElementById("kpi-grid").innerHTML = kpis.map(k => `
+    <div class="kpi-card"><p class="kpi-label mono">${k.label}</p><div class="tear-line"></div>
+      <div class="kpi-row"><span class="kpi-value display">${k.value}</span><span class="kpi-delta mono ${k.trend}">${k.delta}</span></div></div>`).join("");
+  document.getElementById("dash-orders-body").innerHTML = orders.slice(0, 6).map(o => orderRow(o, false)).join("");
+  document.getElementById("dash-product-list").innerHTML = products.map(p => `
+    <li><div><p class="product-title">${p.title}</p><p class="product-meta mono">${p.sku} · ${p.supplier}</p></div>
+      <div class="product-right"><span class="stock-tag mono ${p.stock <= 5 ? "low" : "muted"}">${p.stock} left</span>
+      <span class="price-cell tabular">${money(p.price)}</span><span class="margin-cell mono">${pct(p.margin)}</span></div></li>`).join("");
+
+  /* Product research */
+  document.getElementById("research-body").innerHTML = products.map(p => {
+    const fees = Math.round(p.price * 0.08);
+    const profit = p.price - p.cost - fees;
+    const roi = (profit / p.cost) * 100;
+    return `<tr><td>${p.title}</td><td class="muted">${p.supplier}</td>
+      <td class="right tabular">${money(p.cost)}</td><td class="right tabular">${money(p.price)}</td>
+      <td class="right tabular muted">${money(fees)}</td><td class="right tabular accent-text">${money(profit)}</td>
+      <td class="right mono">${pct(p.margin)}</td><td class="right mono">${pct(roi)}</td></tr>`;
+  }).join("");
+
+  /* Products */
+  document.getElementById("products-body").innerHTML = products.map(p => `
+    <tr><td>${p.title}</td><td class="mono muted">${p.sku}</td><td class="muted">${p.supplier}</td>
+      <td class="right tabular">${money(p.price)}</td>
+      <td class="right tabular ${p.stock <= 5 ? "danger-text" : ""}">${p.stock}</td>
+      <td class="right mono accent-text">${pct(p.margin)}</td>
+      <td><span class="badge ${p.status === "Active" ? "api" : "manual"}">${p.status}</span></td></tr>`).join("");
+
+  /* Suppliers */
+  document.getElementById("suppliers-grid").innerHTML = suppliers.map(s => `
+    <div class="info-card"><h3>${s.name}</h3>
+      <span class="badge ${s.type}">${s.type === "api" ? "API connected" : s.type === "csv" ? "CSV feed" : "Manual"}</span>
+      <div class="row"><span class="muted">Products</span><span class="mono">${s.products}</span></div>
+      <div class="row"><span class="muted">Orders fulfilled</span><span class="mono">${s.orders}</span></div></div>`).join("");
+
+  /* Orders (full) + status filter chips */
+  const filterEl = document.getElementById("order-status-filter");
+  const statusList = ["All", ...STAGES];
+  filterEl.innerHTML = statusList.map((s, i) => `<button class="chip${i === 0 ? " active" : ""}" data-status="${s}">${s}</button>`).join("");
+  function renderOrdersFull(filter) {
+    const rows = filter === "All" ? orders : orders.filter(o => o.stage === filter);
+    document.getElementById("orders-full-body").innerHTML = rows.map(o => orderRow(o, true)).join("");
+  }
+  renderOrdersFull("All");
+  filterEl.addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    filterEl.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    renderOrdersFull(chip.dataset.status);
+  });
+
+  /* Fulfillment */
+  document.getElementById("fulfillment-grid").innerHTML = orders.filter(o => ["New","Paid","Awaiting","Supplier"].includes(o.stage)).map(o => `
+    <div class="info-card"><h3 class="mono" style="font-size:13px;">${o.id}</h3><p>${o.product} · ${o.sku}</p>
+      <div class="pipeline" style="margin-top:10px;">
+        <span class="step">Customer order</span><span class="arrow">→</span>
+        <span class="step">${o.sku} → supplier SKU</span><span class="arrow">→</span>
+        <span class="step accent-text">Qty ${o.qty}</span>
+      </div>
+      <div class="row"><span class="muted">Expected profit</span><span class="mono accent-text">${money(o.profit)}</span></div></div>`).join("");
+
+  /* Tracking */
+  document.getElementById("tracking-body").innerHTML = shipments.map(s => `
+    <tr><td class="mono muted">${s.order}</td><td class="mono">${s.tracking}</td><td>${s.carrier}</td>
+      <td class="muted">${s.shipped}</td><td>${s.pushed ? '<span class="badge api">Synced</span>' : '<span class="badge manual">Pending</span>'}</td></tr>`).join("");
+
+  /* Profit */
+  document.getElementById("profit-kpi-grid").innerHTML = [
+    { label: "This week", value: money(1284000), delta: "+9.8%", trend: "up" },
+    { label: "This month", value: money(5120000), delta: "+4.2%", trend: "up" },
+    { label: "Refunds", value: money(38200), delta: "-2 orders", trend: "down" },
+    { label: "Net margin", value: pct(27.4), delta: "-1.1pt", trend: "down" },
+  ].map(k => `<div class="kpi-card"><p class="kpi-label mono">${k.label}</p><div class="tear-line"></div>
+    <div class="kpi-row"><span class="kpi-value display">${k.value}</span><span class="kpi-delta mono ${k.trend}">${k.delta}</span></div></div>`).join("");
+  const week = [
+    { d: "Mon", v: 38 }, { d: "Tue", v: 52 }, { d: "Wed", v: 41 }, { d: "Thu", v: 66 },
+    { d: "Fri", v: 74 }, { d: "Sat", v: 58 }, { d: "Sun", v: 47 },
+  ];
+  const maxV = Math.max(...week.map(w => w.v));
+  document.getElementById("profit-chart").innerHTML = week.map(w => `
+    <div class="bar-col"><div class="bar" style="height:${(w.v / maxV) * 130}px;"></div><span class="bar-label mono">${w.d}</span></div>`).join("");
+
+  /* Analytics */
+  document.getElementById("analytics-kpi-grid").innerHTML = [
+    { label: "Avg. order value", value: money(78400), delta: "+3.1%", trend: "up" },
+    { label: "Avg. profit / order", value: money(22100), delta: "+1.4%", trend: "up" },
+    { label: "Orders — 30 days", value: "892", delta: "+64", trend: "up" },
+    { label: "Return rate", value: pct(2.1), delta: "-0.3pt", trend: "up" },
+  ].map(k => `<div class="kpi-card"><p class="kpi-label mono">${k.label}</p><div class="tear-line"></div>
+    <div class="kpi-row"><span class="kpi-value display">${k.value}</span><span class="kpi-delta mono ${k.trend}">${k.delta}</span></div></div>`).join("");
+  const sortedByMargin = [...products].sort((a, b) => b.margin - a.margin);
+  document.getElementById("best-sellers-list").innerHTML = sortedByMargin.slice(0, 3).map(p => `
+    <li><div><p class="product-title">${p.title}</p><p class="product-meta mono">${p.sku}</p></div>
+      <span class="margin-cell mono">${pct(p.margin)}</span></li>`).join("");
+  document.getElementById("worst-performers-list").innerHTML = sortedByMargin.slice(-2).reverse().map(p => `
+    <li><div><p class="product-title">${p.title}</p><p class="product-meta mono">${p.sku}</p></div>
+      <span class="margin-cell mono danger-text">${pct(p.margin)}</span></li>`).join("");
+
+  /* AI Assistant (echo-only, no backend) */
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  function addMsg(text, role) {
+    const div = document.createElement("div");
+    div.className = `msg ${role}`;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  function handleSend(text) {
+    const q = (text ?? chatInput.value).trim();
+    if (!q) return;
+    addMsg(q, "user");
+    chatInput.value = "";
+    setTimeout(() => addMsg("This is a static preview, so I can't query real data yet — this panel connects to your product/order database once the backend (Phase 12 in the build plan) is wired up.", "assistant"), 300);
+  }
+  document.getElementById("chat-send").addEventListener("click", () => handleSend());
+  chatInput.addEventListener("keydown", e => { if (e.key === "Enter") handleSend(); });
+  document.querySelectorAll(".suggestion-row button").forEach(b => b.addEventListener("click", () => handleSend(b.dataset.q)));
+
+  /* init */
+  goto("dashboard");
+</script>
+</body>
+</html>
